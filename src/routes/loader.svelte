@@ -1,6 +1,6 @@
 <script>
-	import { onMount } from 'svelte';
-	import QRCode from 'qrcode-generator';
+	import { onMount } from "svelte";
+	import QRCode from "qrcode-generator";
 
 	let initialized = $state(false);
 	let loading = $state(true);
@@ -9,40 +9,45 @@
 
 	function buf2hex(buffer) {
 		// buffer is an ArrayBuffer
-		return [...new Uint8Array(buffer)].map((x) => x.toString(16).padStart(2, '0')).join('');
+		return [...new Uint8Array(buffer)]
+			.map((x) => x.toString(16).padStart(2, "0"))
+			.join("");
 	}
 
 	// Simulate a loading delay (remove this in actual use)
 	onMount(() => {
-		let pubkey = localStorage.getItem('pubkey');
-		let token = localStorage.getItem('token');
+		let pubkey = localStorage.getItem("pubkey");
+		let token = localStorage.getItem("token");
 		if (pubkey == null || token == null) {
-			const qr = QRCode(0, 'L'); // Type number 0 (auto) and error correction level 'L'
+			const qr = QRCode(0, "L"); // Type number 0 (auto) and error correction level 'L'
 			tempToken = new Uint8Array(32);
 			window.crypto.getRandomValues(tempToken);
-			qr.addData('ff' + buf2hex(tempToken.buffer));
-			console.log('ff' + buf2hex(tempToken.buffer));
+			qr.addData("ff" + buf2hex(tempToken.buffer));
+			console.log("ff" + buf2hex(tempToken.buffer));
 			qr.make();
 			qrCodeDataUrl = qr.createDataURL(12, 0); // Scale 8, margin 0
 
 			let conn = new WebSocket(
-				`wss://ln.tejory.io/streamevents?auth=ff${buf2hex(tempToken.buffer)}`
+				`wss://ln.tejory.io/streamevents?auth=ff${buf2hex(tempToken.buffer)}`,
 			);
 			conn.onclose = function (evt) {
 				// if websocket fails, try to get the tx status from another API
 			};
 			conn.onmessage = function (evt) {
-				var messages = evt.data.split('\n');
+				var messages = evt.data.split("\n");
 				for (var i = 0; i < messages.length; i++) {
 					let obj = JSON.parse(messages[i]);
 					if (
-						obj['pubkey'] != undefined &&
-						obj['terminal_name'] != undefined &&
-						obj['token'] != undefined
+						obj["pubkey"] != undefined &&
+						obj["terminal_name"] != undefined &&
+						obj["token"] != undefined
 					) {
-						localStorage.setItem('pubkey', obj['pubkey']);
-						localStorage.setItem('terminal_name', obj['terminal_name']);
-						localStorage.setItem('token', obj['token']);
+						localStorage.setItem("pubkey", obj["pubkey"]);
+						localStorage.setItem(
+							"terminal_name",
+							obj["terminal_name"],
+						);
+						localStorage.setItem("token", obj["token"]);
 						conn.close();
 						initialized = true;
 						setTimeout(() => {
@@ -76,11 +81,13 @@
 			<p class="blinks text-[70px] font-bold">RY</p>
 		{:else}
 			<div style="display: block" class="px-3">
-				<h2 class="rounded bg-white p-2 text-center font-bold">This terminal is not initialized</h2>
+				<h2 class="rounded bg-white p-2 text-center font-bold">
+					This terminal is not initialized
+				</h2>
 				<div class="my-4 rounded bg-[#ffffffa9] p-2">
 					<ul class="list-inside list-disc">
 						<li>Go to "Settings" in Tejory Wallet</li>
-						<li>Click "Add Terminal"</li>
+						<li>Click "Link Terminal"</li>
 						<li>Scan this QR code to activate this terminal</li>
 					</ul>
 				</div>
@@ -101,31 +108,33 @@
 
 <style>
 	@font-face {
-		font-family: 'Nexa';
+		font-family: "Nexa";
 		font-style: normal;
 		font-weight: 300;
 		src:
-			local('Nexa'),
-			url('https://fonts.cdnfonts.com/s/16221/NexaLight.woff') format('woff');
+			local("Nexa"),
+			url("https://fonts.cdnfonts.com/s/16221/NexaLight.woff")
+				format("woff");
 	}
 	@font-face {
-		font-family: 'Nexa';
+		font-family: "Nexa";
 		font-style: normal;
 		font-weight: 700;
 		src:
-			local('Nexa'),
-			url('https://fonts.cdnfonts.com/s/16221/NexaBold.woff') format('woff');
+			local("Nexa"),
+			url("https://fonts.cdnfonts.com/s/16221/NexaBold.woff")
+				format("woff");
 	}
 
 	* {
-		font-family: 'Nexa';
+		font-family: "Nexa";
 	}
 	.loads {
 		transform: translateY(-10px);
 	}
 
 	.spinner {
-		background-image: url('/loader.png');
+		background-image: url("/loader.png");
 		width: 65px;
 		height: 65px;
 		animation: spin 8s linear infinite;

@@ -1,8 +1,8 @@
 <script>
-	import '../../app.css';
-
-	import Modal from './Modal.svelte';
-	import { onMount } from 'svelte';
+	import "../../app.css";
+	import { goto } from "$app/navigation";
+	import Modal from "./Modal.svelte";
+	import { onMount } from "svelte";
 
 	let progress = $state(100);
 	let duration = 5 * 60000;
@@ -13,47 +13,54 @@
 	let session = false;
 	let paymentCheckInterval;
 	let isModalOpen = $state(false);
-	let qrStatus = $state(''); // "success" or "error"
-	let qrMessage = $state('');
+	let qrStatus = $state(""); // "success" or "error"
+	let qrMessage = $state("");
 	let amountFiat = $state(0.0);
-	let paymentReference = $state('');
-	let fiatSymbol = 'PHP';
-
+	let paymentReference = $state("");
+	let fiatSymbol = "PHP";
+	function onclick() {
+		goto("/Exchange");
+	}
+	function regenerateqr() {
+		isQRExpired = false;
+		progress = 100;
+		generateQrCode(sats);
+	}
 	// Simulate QR Scan Detection & Payment Check
 	async function checkPaymentStatus() {
 		try {
-			const response = await fetch('src/routes/GenerateQR/sample.json'); // Replace with actual API
+			const response = await fetch("src/routes/GenerateQR/sample.json"); // Replace with actual API
 			const result1 = await response.json();
 			const result = result1[0];
-			if (result.status === 'paid') {
-				qrStatus = 'success';
-				qrMessage = 'Your payment has been received!';
+			if (result.status === "paid") {
+				qrStatus = "success";
+				qrMessage = "Your payment has been received!";
 				isModalOpen = true;
 
 				clearInterval(paymentCheckInterval);
-			} else if (result.status === 'failed') {
-				console.log('lol');
-				qrStatus = 'error';
-				qrMessage = 'Payment failed. Please try again.';
+			} else if (result.status === "failed") {
+				console.log("lol");
+				qrStatus = "error";
+				qrMessage = "Payment failed. Please try again.";
 				isModalOpen = true;
 				clearInterval(paymentCheckInterval);
 			}
 		} catch (error) {
-			console.error('Error checking payment status:', error);
+			console.error("Error checking payment status:", error);
 		}
 	}
 
 	onMount(() => {
-		let amounts = location.hash.replaceAll('#', '').split(',');
+		let amounts = location.hash.replaceAll("#", "").split(",");
 		sats = parseInt(amounts[0]);
 		amountFiat = parseFloat(amounts[1]);
 		generateQrCode(sats);
 	});
 
 	// QR code Generation
-	import QRCode from 'qrcode-generator';
+	import QRCode from "qrcode-generator";
 
-	let sats = '';
+	let sats = "";
 	let qrCodeDataUrl = $state();
 	let invoice = $state();
 	let txhash = null;
@@ -61,25 +68,25 @@
 	function generateQrCode(sats) {
 		let reqObj = {
 			amount: sats.toString(),
-			expiry: 60 * 5
+			expiry: 60 * 5,
 		};
 
-		fetch('https://ln.tejory.io/makeinvoice', {
-			method: 'POST',
-			mode: 'cors',
+		fetch("https://ln.tejory.io/makeinvoice", {
+			method: "POST",
+			mode: "cors",
 			headers: {
-				pubkey: localStorage.getItem('pubkey'),
-				token: localStorage.getItem('token'),
-				'Access-Control-Allow-Headers': '*'
+				pubkey: localStorage.getItem("pubkey"),
+				token: localStorage.getItem("token"),
+				"Access-Control-Allow-Headers": "*",
 			},
-			body: JSON.stringify(reqObj)
+			body: JSON.stringify(reqObj),
 		}).then(async (response) => {
 			let resObjRaw = await response.text();
 			console.log(resObjRaw);
 			let obj = JSON.parse(resObjRaw);
-			const qr = QRCode(0, 'L'); // Type number 0 (auto) and error correction level 'L'
-			invoice = obj['invoice'];
-			txhash = obj['tx_hash'];
+			const qr = QRCode(0, "L"); // Type number 0 (auto) and error correction level 'L'
+			invoice = obj["invoice"];
+			txhash = obj["tx_hash"];
 			qr.addData(invoice);
 			qr.make();
 			qrCodeDataUrl = qr.createDataURL(12, 0); // Scale 8, margin 0
@@ -104,23 +111,25 @@
 	}
 
 	function streamEvents(txhash) {
-		if (window['WebSocket']) {
-			let pubkey = localStorage.getItem('pubkey');
-			let token = localStorage.getItem('token');
-			let conn = new WebSocket(`wss://ln.tejory.io/streamevents?auth=${pubkey},${token}`);
+		if (window["WebSocket"]) {
+			let pubkey = localStorage.getItem("pubkey");
+			let token = localStorage.getItem("token");
+			let conn = new WebSocket(
+				`wss://ln.tejory.io/streamevents?auth=${pubkey},${token}`,
+			);
 			conn.onclose = function (evt) {
 				// if websocket fails, try to get the tx status from another API
 			};
 			conn.onmessage = function (evt) {
-				var messages = evt.data.split('\n');
+				var messages = evt.data.split("\n");
 				for (var i = 0; i < messages.length; i++) {
 					let obj = JSON.parse(messages[i]);
-					if (obj['txid'] != undefined) {
-						if (obj['txid'] == txhash) {
-							if (obj['settled'] == true) {
+					if (obj["txid"] != undefined) {
+						if (obj["txid"] == txhash) {
+							if (obj["settled"] == true) {
 								paymentReference = txhash.substring(0, 10);
-								qrStatus = 'success';
-								qrMessage = 'Your payment has been received!';
+								qrStatus = "success";
+								qrMessage = "Your payment has been received!";
 								isModalOpen = true;
 							}
 						}
@@ -147,11 +156,15 @@
 		></div>
 	</div>
 
-	<section class="bg-x relative flex flex-col items-center justify-center p-10 py-20">
+	<section
+		class="bg-x relative flex flex-col items-center justify-center p-10 py-20"
+	>
 		{#if !isQRExpired}
 			<div>
 				{#if qrCodeDataUrl}
-					<p class="mb-2 rounded bg-[#ffffffda] text-center font-bold">
+					<p
+						class="mb-2 rounded bg-[#ffffffda] text-center font-bold"
+					>
 						{fiatSymbol}
 						{amountFiat.toFixed(2)}
 					</p>
@@ -167,12 +180,16 @@
 					</p>
 				</div>
 
-				<button class="mt-8 w-full rounded-lg bg-red-600 p-3 font-bold text-white"
+				<button
+					{onclick}
+					class="mt-8 w-full rounded-lg bg-red-600 p-3 font-bold text-white"
 					>Cancel Invoice</button
 				>
 			</div>
 		{:else}
-			<div class="flex min-h-69 w-[90%] flex-col items-center justify-center gap-5">
+			<div
+				class="flex min-h-69 w-[90%] flex-col items-center justify-center gap-5"
+			>
 				<svg
 					version="1.1"
 					id="Layer_1"
@@ -198,8 +215,19 @@
 								cx="172.9"
 								cy="172.9"
 								r="172.5"
-							></circle> <circle fill="#E1473F" cx="172.9" cy="172.9" r="172.5"></circle>
-							<circle fill="#FF5F57" cx="172.9" cy="172.9" r="157.5"></circle>
+							></circle>
+							<circle
+								fill="#E1473F"
+								cx="172.9"
+								cy="172.9"
+								r="172.5"
+							></circle>
+							<circle
+								fill="#FF5F57"
+								cx="172.9"
+								cy="172.9"
+								r="157.5"
+							></circle>
 							<g>
 								<path
 									fill="#752521"
@@ -216,7 +244,9 @@
 					</g></svg
 				>
 				<p class="text-xl">Qr Code has Expired</p>
-				<button class="bg-green-400 p-3"> Regenerate new QR code</button>
+				<button onclick={regenerateqr} class="bg-green-400 p-3">
+					Regenerate new QR code</button
+				>
 			</div>
 			<!-- <p class="absolute bottom-5 left-10 max-w-[80%] overflow-hidden text-ellipsis">
 				{invoice}
@@ -230,7 +260,7 @@
 		message={qrMessage}
 		status={qrStatus}
 		amountCrypto={parseInt(sats) / 100000000}
-		cryptoSymbol={'BTC'}
+		cryptoSymbol={"BTC"}
 		{amountFiat}
 		{fiatSymbol}
 		{paymentReference}
