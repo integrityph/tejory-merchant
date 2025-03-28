@@ -67,42 +67,51 @@
 
 {#if loading}
 	<div
-		class="loader item-center absolute z-10 flex h-dvh w-full items-center justify-center bg-black"
-		style="background-image: url(bg-bg.png);"
+		class="loader item-center absolute z-10 flex h-dvh w-full items-center justify-center bg-white"
+		style="background-image: url(pattern.png);"
 	>
-		{#if initialized}
-			<p class="blinks text-[70px] font-bold">TEJ</p>
-			<div class="loads">
-				<div class="spinner">
-					<img src="/loader.png" alt="" />
-				</div>
-			</div>
-
-			<p class="blinks text-[70px] font-bold">RY</p>
-		{:else}
-			<div style="display: block" class="px-3">
-				<h2 class="rounded bg-white p-2 text-center font-bold">
-					This terminal is not initialized
-				</h2>
-				<div class="my-4 rounded bg-[#ffffffa9] p-2">
-					<ul class="list-inside list-disc">
-						<li>Go to "Settings" in Tejory Wallet</li>
-						<li>Click "Link Terminal"</li>
-						<li>Scan this QR code to activate this terminal</li>
-					</ul>
+		<div
+			style="opacity:0.9"
+			class="loader item-center absolute z-10 flex h-dvh w-full items-center justify-center bg-neutral-500"
+		></div>
+		<div
+			style="background-image: linear-gradient(to bottom, rgba(255, 0, 0, 0), rgb(0 0 0));"
+			class="loader item-center absolute z-10 flex h-dvh w-full items-center justify-center"
+		>
+			{#if initialized}
+				<p class="blinks text-[70px] font-bold">TEJ</p>
+				<div class="loads">
+					<div class="spinner">
+						<img src="/loader.png" alt="" />
+					</div>
 				</div>
 
-				<div>
-					{#if qrCodeDataUrl}
-						<img
-							src={qrCodeDataUrl}
-							alt="QR Code"
-							class="w-full rounded-md border-15 border-white shadow-2xl shadow-black"
-						/>
-					{/if}
+				<p class="blinks text-[70px] font-bold">RY</p>
+			{:else}
+				<div style="display: block" class="px-3">
+					<h2 class="rounded bg-white p-2 text-center font-bold">
+						This terminal is not initialized
+					</h2>
+					<div class="my-4 rounded bg-[#ffffffa9] p-2">
+						<ul class="list-inside list-disc">
+							<li>Go to "Settings" in Tejory Wallet</li>
+							<li>Click "Link Terminal"</li>
+							<li>Scan this QR code to activate this terminal</li>
+						</ul>
+					</div>
+
+					<div>
+						{#if qrCodeDataUrl}
+							<img
+								src={qrCodeDataUrl}
+								alt="QR Code"
+								class="w-full rounded-md border-15 border-white shadow-2xl shadow-black"
+							/>
+						{/if}
+					</div>
 				</div>
-			</div>
-		{/if}
+			{/if}
+		</div>
 	</div>
 {/if}
 
