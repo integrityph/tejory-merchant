@@ -3,7 +3,7 @@
     "description": "Tejory Terminal",
     "short_name": "tejory",
     "display": "standalone",
-    "start_url": "/",
+    "start_url": "/tejory-merchant/",
     "background_color": "#808080",
     "theme_color": "#ff3f20",
     "icons": [
