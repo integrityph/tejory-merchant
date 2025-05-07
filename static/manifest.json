@@ -1,0 +1,17 @@
+{
+    "name": "Tejory Terminal",
+    "description": "Tejory Terminal",
+    "short_name": "tejory",
+    "display": "standalone",
+    "start_url": "/",
+    "background_color": "#808080",
+    "theme_color": "#ff3f20",
+    "icons": [
+        {
+            "src": "logo_black.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ]
+}
