@@ -101,7 +101,7 @@
 
 	<!-- Numeric Keypad -->
 	<section
-		class="h-[45 %] grid grid-cols-3 grid-rows-4 gap-3 rounded-md bg-neutral-300 p-5"
+		class="h-[40%] grid grid-cols-3 grid-rows-4 gap-3 rounded-md bg-neutral-300 p-5"
 	>
 		{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, ".", 0] as key}
 			<div
