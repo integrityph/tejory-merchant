@@ -1,15 +1,17 @@
 <script lang="ts">
-	import { goto } from '$app/navigation';
-	import '../app.css';
-	import Loader from './loader.svelte';
+	import { goto } from "$app/navigation";
+	import "../app.css";
+	import Loader from "./loader.svelte";
 	function onclick() {
-		goto('/Exchange');
+		goto("Exchange");
 	}
 </script>
 
 <main class="relative h-dvh w-full bg-neutral-400">
 	<Loader />
-	<div class="absoulte bg-x flex h-dvh w-full flex-col items-end justify-end p-5 md:h-dvh">
+	<div
+		class="absoulte bg-x flex h-dvh w-full flex-col items-end justify-end p-5 md:h-dvh"
+	>
 		<button
 			{onclick}
 			type="button"
@@ -59,12 +61,24 @@
 					<g fill="none" fill-rule="evenodd">
 						<circle cx="16" cy="16" r="16" fill="#627EEA"></circle>
 						<g fill="#FFF" fill-rule="nonzero">
-							<path fill-opacity=".602" d="M16.498 4v8.87l7.497 3.35z"></path>
+							<path
+								fill-opacity=".602"
+								d="M16.498 4v8.87l7.497 3.35z"
+							></path>
 							<path d="M16.498 4L9 16.22l7.498-3.35z"></path>
-							<path fill-opacity=".602" d="M16.498 21.968v6.027L24 17.616z"></path>
+							<path
+								fill-opacity=".602"
+								d="M16.498 21.968v6.027L24 17.616z"
+							></path>
 							<path d="M16.498 27.995v-6.028L9 17.616z"></path>
-							<path fill-opacity=".2" d="M16.498 20.573l7.497-4.353-7.497-3.348z"></path>
-							<path fill-opacity=".602" d="M9 16.22l7.498 4.353v-7.701z"></path>
+							<path
+								fill-opacity=".2"
+								d="M16.498 20.573l7.497-4.353-7.497-3.348z"
+							></path>
+							<path
+								fill-opacity=".602"
+								d="M9 16.22l7.498 4.353v-7.701z"
+							></path>
 						</g>
 					</g>
 				</g></svg

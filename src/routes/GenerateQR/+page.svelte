@@ -19,7 +19,7 @@
 	let paymentReference = $state("");
 	let fiatSymbol = "PHP";
 	function onclick() {
-		goto("/Exchange");
+		goto("Exchange");
 	}
 	function regenerateqr() {
 		isQRExpired = false;

@@ -1,7 +1,7 @@
 <!-- src/components/Modal.svelte -->
 <script>
-	import { goto } from '$app/navigation';
-	import { onMount } from 'svelte';
+	import { goto } from "$app/navigation";
+	import { onMount } from "svelte";
 
 	let {
 		isOpen,
@@ -11,28 +11,37 @@
 		cryptoSymbol,
 		amountFiat,
 		fiatSymbol,
-		paymentReference
+		paymentReference,
 	} = $props();
 	let now = new Date();
-	var dateOptions = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-	var timeOptions = { hour12: true, hour: '2-digit', minute: '2-digit' };
+	var dateOptions = {
+		weekday: "short",
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+	};
+	var timeOptions = { hour12: true, hour: "2-digit", minute: "2-digit" };
 	let terminalName = $state();
 
 	onMount(() => {
-		terminalName = localStorage.getItem('terminal_name');
+		terminalName = localStorage.getItem("terminal_name");
 	});
 
 	function closeModal() {
 		isOpen = false;
-		goto('/');
+		goto("");
 	}
 </script>
 
 {#if isOpen}
 	<div class="modal-overlay">
 		<div class="modal-content">
-			<h2 class={status === 'success' ? 'text-green-500' : 'text-red-500'}>
-				{status === 'success' ? 'Payment Successful!' : 'Payment Failed'}
+			<h2
+				class={status === "success" ? "text-green-500" : "text-red-500"}
+			>
+				{status === "success"
+					? "Payment Successful!"
+					: "Payment Failed"}
 			</h2>
 			<p>{message}</p>
 			<div
@@ -48,8 +57,8 @@
 					=============================<br />
 					<br />
 					Payment Successful<br />
-					Date: {now.toLocaleDateString('en-US', dateOptions)}<br />
-					Time: {now.toLocaleTimeString('en-US', timeOptions)}<br />
+					Date: {now.toLocaleDateString("en-US", dateOptions)}<br />
+					Time: {now.toLocaleTimeString("en-US", timeOptions)}<br />
 					Reference: {paymentReference}<br />
 					Terminal: {terminalName}<br />
 					=============================<br />
