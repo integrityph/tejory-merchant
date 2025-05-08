@@ -68,7 +68,7 @@
 {#if loading}
 	<div
 		class="loader item-center absolute z-10 flex h-dvh w-full items-center justify-center bg-white"
-		style="background-image:url(/pattern.png);"
+		style="background-image:url(pattern.png);"
 	>
 		<div
 			style="opacity:0.9"
