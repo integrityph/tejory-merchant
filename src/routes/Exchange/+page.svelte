@@ -65,7 +65,7 @@
 <main class="relative flex h-dvh w-full flex-col gap-5 bg-neutral-200 px-5">
 	<section class="relative mt-5 flex h-[40%] flex-col gap-2">
 		<img
-			src="/swap.png"
+			src="swap.png"
 			alt="Swap Icon"
 			class="absolute top-0 right-0 bottom-0 left-0 m-auto w-15"
 		/>
