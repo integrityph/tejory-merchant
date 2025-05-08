@@ -1,20 +1,20 @@
 {
     "name": "Tejory Terminal",
     "description": "Tejory Terminal",
-    "short_name": "tejory",
+    "short_name": "Tejory Terminal",
     "display": "standalone",
     "start_url": "/tejory-merchant/",
     "background_color": "#808080",
     "theme_color": "#ff3f20",
     "icons": [
         {
-            "src": "logo_black.png",
+            "src": "logo-tejor.png",
             "sizes": "192x192",
             "type": "image/png",
             "purpose": "any maskable"
         },
         {
-            "src": "logo_black.png",
+            "src": "logo-tejor.png",
             "sizes": "512x512",
             "type": "image/png",
             "purpose": "any maskable"
