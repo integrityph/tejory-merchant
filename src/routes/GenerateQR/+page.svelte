@@ -270,7 +270,7 @@
 <style>
 	.progress-container {
 		width: 100%;
-		height: 10px;
+		min-height: 10px;
 		background-color: #6f6f6f;
 		overflow: hidden;
 		margin-top: 10px;
