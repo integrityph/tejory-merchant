@@ -65,7 +65,7 @@
 	import QRCode from "qrcode-generator";
 	import { error } from "@sveltejs/kit";
 
-	let sats = "";
+	let sats = $state("");
 	let qrCodeDataUrl = $state();
 	let invoice = $state();
 	let txhash = null;
@@ -88,13 +88,13 @@
 		})
 			.then(async (response) => {
 				let resObjRaw = await response.text();
-				// console.log(resObjRaw);
-				// let obj = JSON.parse(resObjRaw);
+				console.log(resObjRaw);
+				let obj = JSON.parse(resObjRaw);
 				const qr = QRCode(0, "L"); // Type number 0 (auto) and error correction level 'L'
-				// invoice = obj["invoice"];
-				// txhash = obj["tx_hash"];
-				// qr.addData('invoice');
-				qr.addData("212121212");
+				invoice = obj["invoice"];
+				txhash = obj["tx_hash"];
+				qr.addData("invoice");
+				// qr.addData("212121212");
 				qr.make();
 				qrCodeDataUrl = qr.createDataURL(12, 0); // Scale 8, margin 0
 
