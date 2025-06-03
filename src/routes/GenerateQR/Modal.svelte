@@ -22,9 +22,11 @@
 	};
 	var timeOptions = { hour12: true, hour: "2-digit", minute: "2-digit" };
 	let terminalName = $state();
+	let currency_type = $state();
 
 	onMount(() => {
 		terminalName = localStorage.getItem("terminal_name");
+		currency_type = localStorage.getItem("Currency").toUpperCase();
 	});
 
 	function closeModal() {
@@ -67,7 +69,7 @@
 					Currency: Bitcoin<br />
 					Network: Lightning<br />
 					Amount (BTC): {amountCrypto.toFixed(8)}<br />
-					Amount (PHP): {amountFiat.toFixed(2)}<br />
+					Amount ({currency_type}): {amountFiat.toFixed(2)}<br />
 					<br />
 					<br />
 					<br />

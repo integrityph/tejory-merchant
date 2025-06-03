@@ -17,7 +17,7 @@
 	let qrMessage = $state("");
 	let amountFiat = $state(0.0);
 	let paymentReference = $state("");
-	let fiatSymbol = "PHP";
+	let fiatSymbol = $state("PHP");
 	function onclick() {
 		goto("Exchange");
 	}
@@ -39,7 +39,6 @@
 
 				clearInterval(paymentCheckInterval);
 			} else if (result.status === "failed") {
-				console.log("lol");
 				qrStatus = "error";
 				qrMessage = "Payment failed. Please try again.";
 				isModalOpen = true;
@@ -51,6 +50,11 @@
 	}
 
 	onMount(() => {
+		let current = localStorage.getItem("Currency").toUpperCase();
+		if (current != null) {
+			// console.log(current);
+			fiatSymbol = current;
+		}
 		let amounts = location.hash.replaceAll("#", "").split(",");
 		sats = parseInt(amounts[0]);
 		amountFiat = parseFloat(amounts[1]);
@@ -59,6 +63,7 @@
 
 	// QR code Generation
 	import QRCode from "qrcode-generator";
+	import { error } from "@sveltejs/kit";
 
 	let sats = "";
 	let qrCodeDataUrl = $state();
@@ -80,34 +85,42 @@
 				"Access-Control-Allow-Headers": "*",
 			},
 			body: JSON.stringify(reqObj),
-		}).then(async (response) => {
-			let resObjRaw = await response.text();
-			console.log(resObjRaw);
-			let obj = JSON.parse(resObjRaw);
-			const qr = QRCode(0, "L"); // Type number 0 (auto) and error correction level 'L'
-			invoice = obj["invoice"];
-			txhash = obj["tx_hash"];
-			qr.addData(invoice);
-			qr.make();
-			qrCodeDataUrl = qr.createDataURL(12, 0); // Scale 8, margin 0
+		})
+			.then(async (response) => {
+				let resObjRaw = await response.text();
+				// console.log(resObjRaw);
+				// let obj = JSON.parse(resObjRaw);
+				const qr = QRCode(0, "L"); // Type number 0 (auto) and error correction level 'L'
+				// invoice = obj["invoice"];
+				// txhash = obj["tx_hash"];
+				// qr.addData('invoice');
+				qr.addData("212121212");
+				qr.make();
+				qrCodeDataUrl = qr.createDataURL(12, 0); // Scale 8, margin 0
 
-			streamEvents(txhash);
+				streamEvents(txhash);
 
-			// Start QR expiration countdown
-			const interval = setInterval(() => {
-				if (progress > 0) {
-					progress = Math.max(progress - decrement, 0);
-				} else {
+				// Start QR expiration countdown
+				const interval = setInterval(() => {
+					if (progress > 0) {
+						progress = Math.max(progress - decrement, 0);
+					} else {
+						clearInterval(interval);
+						// console.log('QR Expired');
+						isQRExpired = true;
+					}
+				}, intervalTime);
+
+				return () => {
 					clearInterval(interval);
-					// console.log('QR Expired');
-					isQRExpired = true;
-				}
-			}, intervalTime);
-
-			return () => {
-				clearInterval(interval);
-			};
-		});
+				};
+			})
+			.catch((error) => {
+				console.error(
+					"There was a problem with the Fetch operation:",
+					error,
+				);
+			});
 	}
 
 	function streamEvents(txhash) {

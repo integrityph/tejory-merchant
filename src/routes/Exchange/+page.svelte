@@ -9,7 +9,9 @@
 	let currencyList = $state([]);
 	let invoice = $state("");
 	let paid = $state(false);
+
 	function onclick() {
+		localStorage.setItem("Currency", selectedCurrency);
 		let sats = parseInt(lnBtcAmount * 100000000);
 		goto("GenerateQR#" + sats + "," + fiatAmount);
 	}
@@ -41,6 +43,11 @@
 
 	// Check for payment every 10 seconds
 	onMount(() => {
+		let current = localStorage.getItem("Currency");
+		if (current != null) {
+			console.log(current);
+			selectedCurrency = current;
+		}
 		fetchExchangeRates();
 		const interval = setInterval(() => {
 			if (invoice) {
@@ -101,22 +108,30 @@
 
 	<!-- Numeric Keypad -->
 	<section
-		class="h-[45%] grid grid-cols-3 grid-rows-4 gap-3 rounded-md bg-neutral-300 p-5"
+		class="h-[45%] grid grid-cols-3 grid-rows-4 gap-3 rounded-md bg-white p-5"
 	>
 		{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, ".", 0] as key}
-			<div
-				class="flex w-full cursor-pointer items-center justify-center rounded-md border-1 border-black bg-neutral-400 p-5 text-4xl font-bold text-white shadow-md hover:bg-neutral-500"
-				onclick={() => handleKeypadInput(key)}
-			>
-				{key}
-			</div>
+			<button class="button" onclick={() => handleKeypadInput(key)}>
+				<div
+					class="button-outer flex justify-center items-center w-full"
+				>
+					<div
+						class="button-inner w-full flex justify-center items-center text-3xl text-neutral-700"
+					>
+						{key}
+					</div>
+				</div>
+			</button>
 		{/each}
-		<div
-			class="flex w-full cursor-pointer items-center justify-center rounded-md border-1 border-black bg-neutral-400 p-5 text-3xl font-bold text-white shadow-md hover:bg-neutral-500"
-			onclick={() => (fiatAmount = "")}
-		>
-			C
-		</div>
+		<button class="button" onclick={() => (fiatAmount = "")}>
+			<div class="button-outer flex justify-center items-center w-full">
+				<div
+					class="button-inner w-full flex justify-center items-center text-3xl text-red-800"
+				>
+					C
+				</div>
+			</div>
+		</button>
 	</section>
 
 	<!-- Payment & Conversion -->
@@ -137,3 +152,135 @@
 		</button>
 	</main>
 </main>
+
+<style>
+	.button {
+		all: unset;
+		cursor: pointer;
+		-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+		position: relative;
+		border-radius: 100em;
+		background-color: rgba(0, 0, 0, 0.75);
+		box-shadow:
+			-0.15em -0.15em 0.15em -0.075em rgba(5, 5, 5, 0.25),
+			0.0375em 0.0375em 0.0675em 0 rgba(5, 5, 5, 0.1);
+	}
+
+	.button::after {
+		content: "";
+		position: absolute;
+		z-index: 0;
+		width: calc(100% + 0.3em);
+		height: calc(100% + 0.3em);
+		top: -0.15em;
+		left: -0.15em;
+		border-radius: inherit;
+		background: linear-gradient(
+			-135deg,
+			rgba(5, 5, 5, 0.5),
+			transparent 20%,
+			transparent 100%
+		);
+		filter: blur(0.0125em);
+		opacity: 0.25;
+		mix-blend-mode: multiply;
+	}
+
+	.button .button-outer {
+		position: relative;
+		z-index: 1;
+		border-radius: inherit;
+		height: 100%;
+		transition: box-shadow 300ms ease;
+		will-change: box-shadow;
+		box-shadow:
+			0 0.05em 0.05em -0.01em rgba(5, 5, 5, 1),
+			0 0.01em 0.01em -0.01em rgba(5, 5, 5, 0.5),
+			0.15em 0.3em 0.1em -0.01em rgba(5, 5, 5, 0.25);
+	}
+
+	.button:hover .button-outer {
+		box-shadow:
+			0 0 0 0 rgba(5, 5, 5, 1),
+			0 0 0 0 rgba(5, 5, 5, 0.5),
+			0 0 0 0 rgba(5, 5, 5, 0.25);
+	}
+
+	.button-inner {
+		--inset: 0.035em;
+		position: relative;
+		z-index: 1;
+		border-radius: inherit;
+		height: 100%;
+		background-image: linear-gradient(
+			135deg,
+			rgba(230, 230, 230, 1),
+			rgba(180, 180, 180, 1)
+		);
+		transition:
+			box-shadow 300ms ease,
+			clip-path 250ms ease,
+			background-image 250ms ease,
+			transform 250ms ease;
+		will-change: box-shadow, clip-path, background-image, transform;
+		overflow: clip;
+		clip-path: inset(0 0 0 0 round 100em);
+		box-shadow:
+        /* 1 */
+			0 0 0 0 inset rgba(5, 5, 5, 0.1),
+			/* 2 */ -0.05em -0.05em 0.05em 0 inset rgba(5, 5, 5, 0.25),
+			/* 3 */ 0 0 0 0 inset rgba(5, 5, 5, 0.1),
+			/* 4 */ 0 0 0.05em 0.2em inset rgba(255, 255, 255, 0.25),
+			/* 5 */ 0.025em 0.05em 0.1em 0 inset rgba(255, 255, 255, 1),
+			/* 6 */ 0.12em 0.12em 0.12em inset rgba(255, 255, 255, 0.25),
+			/* 7 */ -0.075em -0.25em 0.25em 0.1em inset rgba(5, 5, 5, 0.25);
+	}
+
+	.button:hover .button-inner {
+		clip-path: inset(
+			clamp(1px, 0.0625em, 2px) clamp(1px, 0.0625em, 2px)
+				clamp(1px, 0.0625em, 2px) clamp(1px, 0.0625em, 2px) round 100em
+		);
+		box-shadow:
+        /* 1 */
+			0.1em 0.15em 0.05em 0 inset rgba(5, 5, 5, 0.75),
+			/* 2 */ -0.025em -0.03em 0.05em 0.025em inset rgba(5, 5, 5, 0.5),
+			/* 3 */ 0.25em 0.25em 0.2em 0 inset rgba(5, 5, 5, 0.5),
+			/* 4 */ 0 0 0.05em 0.5em inset rgba(255, 255, 255, 0.15),
+			/* 5 */ 0 0 0 0 inset rgba(255, 255, 255, 1),
+			/* 6 */ 0.12em 0.12em 0.12em inset rgba(255, 255, 255, 0.25),
+			/* 7 */ -0.075em -0.12em 0.2em 0.1em inset rgba(5, 5, 5, 0.25);
+	}
+
+	.button .button-inner span {
+		position: relative;
+		z-index: 4;
+		font-family: "Inter", sans-serif;
+		letter-spacing: -0.05em;
+		font-weight: 500;
+		color: rgba(0, 0, 0, 0);
+		background-image: linear-gradient(
+			135deg,
+			rgba(25, 25, 25, 1),
+			rgba(75, 75, 75, 1)
+		);
+		-webkit-background-clip: text;
+		background-clip: text;
+		transition: transform 250ms ease;
+		display: block;
+		will-change: transform;
+		text-shadow: rgba(0, 0, 0, 0.1) 0 0 0.1em;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+	}
+
+	.button:hover .button-inner span {
+		transform: scale(0.975);
+	}
+
+	.button:active .button-inner {
+		transform: scale(0.975);
+	}
+</style>
