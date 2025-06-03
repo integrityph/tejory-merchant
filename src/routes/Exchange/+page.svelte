@@ -252,7 +252,7 @@
 			/* 7 */ -0.075em -0.12em 0.2em 0.1em inset rgba(5, 5, 5, 0.25);
 	}
 
-	.button .button-inner span {
+	/* .button .button-inner span {
 		position: relative;
 		z-index: 4;
 		font-family: "Inter", sans-serif;
@@ -278,7 +278,7 @@
 
 	.button:hover .button-inner span {
 		transform: scale(0.975);
-	}
+	} */
 
 	.button:active .button-inner {
 		transform: scale(0.975);
