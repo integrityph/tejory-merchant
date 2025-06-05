@@ -124,10 +124,7 @@
 				</div>
 			</button>
 		{/each}
-		<button
-			class="button"
-			onclick={() => ((valid = true), (fiatAmount = ""))}
-		>
+		<button class="button" onclick={() => (fiatAmount = "")}>
 			<div class="button-outer flex justify-center items-center w-full">
 				<div
 					class="button-inner w-full flex justify-center items-center text-3xl text-red-800"
