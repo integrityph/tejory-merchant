@@ -31,7 +31,7 @@
 
 	function closeModal() {
 		isOpen = false;
-		goto("");
+		goto("/");
 	}
 </script>
 
