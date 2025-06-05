@@ -1,6 +1,7 @@
 <script>
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
+	import { Warning } from "postcss";
 	// State variables
 	let fiatAmount = $state(""); // User-entered fiat amount
 	let selectedCurrency = $state("php"); // Default currency set to PHP
@@ -45,7 +46,8 @@
 	onMount(() => {
 		let current = localStorage.getItem("Currency");
 		if (current != null) {
-			console.log(current);
+			// console.log(current);
+			console.warn("Josh");
 			selectedCurrency = current;
 		}
 		fetchExchangeRates();
@@ -76,7 +78,6 @@
 			alt="Swap Icon"
 			class="absolute top-0 right-0 bottom-0 left-0 m-auto w-15"
 		/>
-
 		<!-- Fiat Currency Input -->
 		<div class="h-[100%] rounded-md bg-white p-2 shadow">
 			<select
@@ -123,7 +124,10 @@
 				</div>
 			</button>
 		{/each}
-		<button class="button" onclick={() => (fiatAmount = "")}>
+		<button
+			class="button"
+			onclick={() => ((valid = true), (fiatAmount = ""))}
+		>
 			<div class="button-outer flex justify-center items-center w-full">
 				<div
 					class="button-inner w-full flex justify-center items-center text-3xl text-red-800"
