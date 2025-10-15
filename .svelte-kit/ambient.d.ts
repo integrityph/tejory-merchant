@@ -21,83 +21,99 @@
  * 
  * You can override `.env` values from the command line like so:
  * 
- * ```bash
+ * ```sh
  * MY_FEATURE_FLAG="enabled" npm run dev
  * ```
  */
 declare module '$env/static/private' {
 	export const LESSOPEN: string;
-	export const LANGUAGE: string;
 	export const USER: string;
+	export const LC_TIME: string;
 	export const npm_config_user_agent: string;
-	export const SSH_AGENT_PID: string;
 	export const XDG_SESSION_TYPE: string;
 	export const npm_node_execpath: string;
+	export const KIGITHUB: string;
 	export const SHLVL: string;
 	export const npm_config_noproxy: string;
 	export const HOME: string;
+	export const OLDPWD: string;
 	export const DESKTOP_SESSION: string;
+	export const NVM_BIN: string;
 	export const npm_package_json: string;
+	export const NVM_INC: string;
 	export const GNOME_SHELL_SESSION_MODE: string;
 	export const GTK_MODULES: string;
-	export const MANAGERPID: string;
+	export const LC_MONETARY: string;
 	export const npm_config_userconfig: string;
 	export const npm_config_local_prefix: string;
-	export const DBUS_STARTER_BUS_TYPE: string;
+	export const SYSTEMD_EXEC_PID: string;
+	export const GOROOT: string;
 	export const DBUS_SESSION_BUS_ADDRESS: string;
 	export const COLORTERM: string;
 	export const COLOR: string;
+	export const NVM_DIR: string;
+	export const MANDATORY_PATH: string;
 	export const IM_CONFIG_PHASE: string;
+	export const GTK_IM_MODULE: string;
 	export const LOGNAME: string;
-	export const JOURNAL_STREAM: string;
 	export const _: string;
 	export const npm_config_prefix: string;
 	export const npm_config_npm_version: string;
 	export const XDG_SESSION_CLASS: string;
+	export const DEFAULTS_PATH: string;
+	export const KUBE_EDITOR: string;
 	export const USERNAME: string;
 	export const TERM: string;
 	export const npm_config_cache: string;
 	export const GNOME_DESKTOP_SESSION_ID: string;
-	export const RBENV_SHELL: string;
 	export const WINDOWPATH: string;
 	export const npm_config_node_gyp: string;
 	export const PATH: string;
 	export const SESSION_MANAGER: string;
-	export const INVOCATION_ID: string;
+	export const PAPERSIZE: string;
 	export const NODE: string;
 	export const npm_package_name: string;
 	export const XDG_MENU_PREFIX: string;
+	export const LC_ADDRESS: string;
 	export const GNOME_TERMINAL_SCREEN: string;
 	export const XDG_RUNTIME_DIR: string;
 	export const DISPLAY: string;
 	export const LANG: string;
 	export const XDG_CURRENT_DESKTOP: string;
+	export const LC_TELEPHONE: string;
 	export const XMODIFIERS: string;
 	export const XDG_SESSION_DESKTOP: string;
 	export const XAUTHORITY: string;
 	export const LS_COLORS: string;
 	export const GNOME_TERMINAL_SERVICE: string;
 	export const npm_lifecycle_script: string;
+	export const SSH_AGENT_LAUNCHER: string;
 	export const SSH_AUTH_SOCK: string;
 	export const SHELL: string;
+	export const LC_NAME: string;
 	export const GOPATH: string;
 	export const npm_package_version: string;
 	export const npm_lifecycle_event: string;
 	export const QT_ACCESSIBILITY: string;
 	export const GDMSESSION: string;
-	export const GEM_HOME: string;
 	export const LESSCLOSE: string;
+	export const LC_MEASUREMENT: string;
 	export const GPG_AGENT_INFO: string;
+	export const LC_IDENTIFICATION: string;
 	export const QT_IM_MODULE: string;
 	export const npm_config_globalconfig: string;
 	export const npm_config_init_module: string;
 	export const PWD: string;
+	export const KICAD_PATH: string;
 	export const npm_execpath: string;
 	export const XDG_CONFIG_DIRS: string;
-	export const DBUS_STARTER_ADDRESS: string;
+	export const ANDROID_HOME: string;
+	export const NVM_CD_FLAGS: string;
 	export const XDG_DATA_DIRS: string;
 	export const npm_config_global_prefix: string;
+	export const LC_NUMERIC: string;
 	export const npm_command: string;
+	export const LC_PAPER: string;
 	export const VTE_VERSION: string;
 	export const INIT_CWD: string;
 	export const EDITOR: string;
@@ -122,89 +138,103 @@ declare module '$env/static/public' {
  * 
  * This module cannot be imported into client-side code.
  * 
- * Dynamic environment variables cannot be used during prerendering.
- * 
  * ```ts
  * import { env } from '$env/dynamic/private';
  * console.log(env.DEPLOYMENT_SPECIFIC_VARIABLE);
  * ```
  * 
- * > In `dev`, `$env/dynamic` always includes environment variables from `.env`. In `prod`, this behavior will depend on your adapter.
+ * > [!NOTE] In `dev`, `$env/dynamic` always includes environment variables from `.env`. In `prod`, this behavior will depend on your adapter.
  */
 declare module '$env/dynamic/private' {
 	export const env: {
 		LESSOPEN: string;
-		LANGUAGE: string;
 		USER: string;
+		LC_TIME: string;
 		npm_config_user_agent: string;
-		SSH_AGENT_PID: string;
 		XDG_SESSION_TYPE: string;
 		npm_node_execpath: string;
+		KIGITHUB: string;
 		SHLVL: string;
 		npm_config_noproxy: string;
 		HOME: string;
+		OLDPWD: string;
 		DESKTOP_SESSION: string;
+		NVM_BIN: string;
 		npm_package_json: string;
+		NVM_INC: string;
 		GNOME_SHELL_SESSION_MODE: string;
 		GTK_MODULES: string;
-		MANAGERPID: string;
+		LC_MONETARY: string;
 		npm_config_userconfig: string;
 		npm_config_local_prefix: string;
-		DBUS_STARTER_BUS_TYPE: string;
+		SYSTEMD_EXEC_PID: string;
+		GOROOT: string;
 		DBUS_SESSION_BUS_ADDRESS: string;
 		COLORTERM: string;
 		COLOR: string;
+		NVM_DIR: string;
+		MANDATORY_PATH: string;
 		IM_CONFIG_PHASE: string;
+		GTK_IM_MODULE: string;
 		LOGNAME: string;
-		JOURNAL_STREAM: string;
 		_: string;
 		npm_config_prefix: string;
 		npm_config_npm_version: string;
 		XDG_SESSION_CLASS: string;
+		DEFAULTS_PATH: string;
+		KUBE_EDITOR: string;
 		USERNAME: string;
 		TERM: string;
 		npm_config_cache: string;
 		GNOME_DESKTOP_SESSION_ID: string;
-		RBENV_SHELL: string;
 		WINDOWPATH: string;
 		npm_config_node_gyp: string;
 		PATH: string;
 		SESSION_MANAGER: string;
-		INVOCATION_ID: string;
+		PAPERSIZE: string;
 		NODE: string;
 		npm_package_name: string;
 		XDG_MENU_PREFIX: string;
+		LC_ADDRESS: string;
 		GNOME_TERMINAL_SCREEN: string;
 		XDG_RUNTIME_DIR: string;
 		DISPLAY: string;
 		LANG: string;
 		XDG_CURRENT_DESKTOP: string;
+		LC_TELEPHONE: string;
 		XMODIFIERS: string;
 		XDG_SESSION_DESKTOP: string;
 		XAUTHORITY: string;
 		LS_COLORS: string;
 		GNOME_TERMINAL_SERVICE: string;
 		npm_lifecycle_script: string;
+		SSH_AGENT_LAUNCHER: string;
 		SSH_AUTH_SOCK: string;
 		SHELL: string;
+		LC_NAME: string;
 		GOPATH: string;
 		npm_package_version: string;
 		npm_lifecycle_event: string;
 		QT_ACCESSIBILITY: string;
 		GDMSESSION: string;
-		GEM_HOME: string;
 		LESSCLOSE: string;
+		LC_MEASUREMENT: string;
 		GPG_AGENT_INFO: string;
+		LC_IDENTIFICATION: string;
 		QT_IM_MODULE: string;
 		npm_config_globalconfig: string;
 		npm_config_init_module: string;
 		PWD: string;
+		KICAD_PATH: string;
 		npm_execpath: string;
 		XDG_CONFIG_DIRS: string;
-		DBUS_STARTER_ADDRESS: string;
+		ANDROID_HOME: string;
+		NVM_CD_FLAGS: string;
 		XDG_DATA_DIRS: string;
 		npm_config_global_prefix: string;
+		LC_NUMERIC: string;
 		npm_command: string;
+		LC_PAPER: string;
 		VTE_VERSION: string;
 		INIT_CWD: string;
 		EDITOR: string;
@@ -218,8 +248,6 @@ declare module '$env/dynamic/private' {
  * Similar to [`$env/dynamic/private`](https://svelte.dev/docs/kit/$env-dynamic-private), but only includes variables that begin with [`config.kit.env.publicPrefix`](https://svelte.dev/docs/kit/configuration#env) (which defaults to `PUBLIC_`), and can therefore safely be exposed to client-side code.
  * 
  * Note that public dynamic environment variables must all be sent from the server to the client, causing larger network requests — when possible, use `$env/static/public` instead.
- * 
- * Dynamic environment variables cannot be used during prerendering.
  * 
  * ```ts
  * import { env } from '$env/dynamic/public';

@@ -1,0 +1,11 @@
+{
+  "appId": "io.tejory.pos",
+  "appName": "Tejory POS",
+  "webDir": "build",
+	"android": {
+    "buildOptions": {
+      "sourceCompatibility": 17,
+      "targetCompatibility": 17
+    }
+  }
+}

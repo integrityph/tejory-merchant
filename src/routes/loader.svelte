@@ -6,6 +6,30 @@
 	let loading = $state(true);
 	let tempToken = null;
 	let qrCodeDataUrl = $state();
+	let remoteToken = $state('');
+
+  // Function to handle the token submission
+  function handleLinkWithToken() {
+    if (!remoteToken.trim()) return; // Simple validation
+    
+		let tokenParts = remoteToken.split(":");
+
+		if (tokenParts.length != 3){
+			console.log("tokenParts.length is not 3", tokenParts.length);
+			return;
+		}
+
+    localStorage.setItem("pubkey", tokenParts[0]);
+		localStorage.setItem("terminal_name", tokenParts[2]);
+		localStorage.setItem("token", tokenParts[1]);
+		initialized = true;
+		setTimeout(() => {
+			loading = false;
+		}, 1000);
+    
+    // Clear input after submission
+    remoteToken = '';
+  }
 
 	function buf2hex(buffer) {
 		// buffer is an ArrayBuffer
@@ -43,10 +67,7 @@
 						obj["token"] != undefined
 					) {
 						localStorage.setItem("pubkey", obj["pubkey"]);
-						localStorage.setItem(
-							"terminal_name",
-							obj["terminal_name"],
-						);
+						localStorage.setItem("terminal_name", obj["terminal_name"]);
 						localStorage.setItem("token", obj["token"]);
 						conn.close();
 						initialized = true;
@@ -92,14 +113,6 @@
 					<h2 class="rounded bg-white p-2 text-center font-bold">
 						This terminal is not initialized
 					</h2>
-					<div class="my-4 rounded bg-[#ffffffa9] p-2">
-						<ul class="list-inside list-disc">
-							<li>Go to "Settings" in Tejory Wallet</li>
-							<li>Click "Link Terminal"</li>
-							<li>Scan this QR code to activate this terminal</li>
-						</ul>
-					</div>
-
 					<div>
 						{#if qrCodeDataUrl}
 							<img
@@ -109,6 +122,44 @@
 							/>
 						{/if}
 					</div>
+					<div class="my-4 rounded bg-[#ffffffa9] p-4 text-gray-800 shadow">
+						<p class="text-sm font-semibold mb-2">To link via QR Code:</p>
+						<ul class="list-inside list-disc space-y-1">
+							<li>Go to "Settings" in Tejory Wallet</li>
+							<li>Click "Link Terminal"</li>
+							<li>Scan the QR code to activate this terminal</li>
+						</ul>
+
+						<div class="relative flex items-center my-2">
+							<div class="flex-grow border-t border-gray-300"></div>
+							<span class="flex-shrink mx-4 text-sm text-gray-500">OR</span>
+							<div class="flex-grow border-t border-gray-300"></div>
+						</div>
+
+						<div>
+							<label for="token-input" class="block text-sm font-semibold mb-2">
+								Paste your initialization token here:
+							</label>
+							<div class="flex space-x-2">
+								<input
+									id="token-input"
+									type="text"
+									bind:value={remoteToken}
+									placeholder="e.g., 021234..."
+									class="flex-grow w-full rounded border border-gray-300 bg-white/80 p-2 font-mono focus:ring-blue-500 focus:border-blue-500"
+								/>
+								<button
+									onclick={handleLinkWithToken}
+									disabled={!remoteToken.trim()}
+									class="px-4 py-2 font-semibold text-white bg-blue-600 rounded shadow hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+								>
+									Link
+								</button>
+							</div>
+						</div>
+					</div>
+
+					
 				</div>
 			{/if}
 		</div>
@@ -122,8 +173,7 @@
 		font-weight: 300;
 		src:
 			local("Nexa"),
-			url("https://fonts.cdnfonts.com/s/16221/NexaLight.woff")
-				format("woff");
+			url("https://fonts.cdnfonts.com/s/16221/NexaLight.woff") format("woff");
 	}
 	@font-face {
 		font-family: "Nexa";
@@ -131,8 +181,7 @@
 		font-weight: 700;
 		src:
 			local("Nexa"),
-			url("https://fonts.cdnfonts.com/s/16221/NexaBold.woff")
-				format("woff");
+			url("https://fonts.cdnfonts.com/s/16221/NexaBold.woff") format("woff");
 	}
 
 	* {

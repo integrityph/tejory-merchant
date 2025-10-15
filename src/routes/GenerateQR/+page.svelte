@@ -3,6 +3,8 @@
 	import { goto } from "$app/navigation";
 	import Modal from "./Modal.svelte";
 	import { onMount } from "svelte";
+	import { BleClient } from '@capacitor-community/bluetooth-le';
+
 
 	let progress = $state(100);
 	let duration = 5 * 60000;
@@ -19,12 +21,19 @@
 	let paymentReference = $state("");
 	let fiatSymbol = $state("PHP");
 	let status = $state();
+	var dateOptions = {
+		weekday: "short",
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+	};
+	var timeOptions = { hour12: true, hour: "2-digit", minute: "2-digit" };
 
 	function onclick() {
 		goto("Exchange");
 	}
 
-	function regenerateqr() {
+	function regenerateQR() {
 		isQRExpired = false;
 		progress = 100;
 		generateQrCode(sats);
@@ -265,7 +274,7 @@
 						</g></svg
 					>
 					<p class="text-xl">Qr Code has Expired</p>
-					<button onclick={regenerateqr} class="bg-green-400 p-3">
+					<button onclick={regenerateQR} class="bg-green-400 p-3">
 						Regenerate new QR code</button
 					>
 				</div>

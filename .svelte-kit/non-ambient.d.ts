@@ -23,3 +23,21 @@ declare module "svelte/elements" {
 }
 
 export {};
+
+
+declare module "$app/types" {
+	export interface AppTypes {
+		RouteId(): "/" | "/Exchange" | "/GenerateQR";
+		RouteParams(): {
+			
+		};
+		LayoutParams(): {
+			"/": Record<string, never>;
+			"/Exchange": Record<string, never>;
+			"/GenerateQR": Record<string, never>
+		};
+		Pathname(): "/" | "/Exchange" | "/Exchange/" | "/GenerateQR" | "/GenerateQR/";
+		ResolvedPathname(): `${"" | `/${string}`}${ReturnType<AppTypes['Pathname']>}`;
+		Asset(): "/.nojekyll" | "/Enter.png" | "/bg-bg.png" | "/favicon.png" | "/loader (copy).png" | "/loader.png" | "/logo-tejor.png" | "/logo_black.png" | "/manifest.json" | "/pattern.png" | "/swap.png" | "/tejory-white.svg" | string & {};
+	}
+}

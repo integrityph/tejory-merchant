@@ -1,0 +1,13 @@
+{
+	"/": [
+		"src/routes/+layout.js",
+		"src/routes/+layout.js"
+	],
+	"/Exchange": [
+		"src/routes/+layout.js"
+	],
+	"/GenerateQR": [
+		"src/routes/GenerateQR/+page.js",
+		"src/routes/+layout.js"
+	]
+}
