@@ -1,1 +1,1 @@
-# Tejory Merchant
+# Tejory POS

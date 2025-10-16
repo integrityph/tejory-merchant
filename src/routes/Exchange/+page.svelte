@@ -2,9 +2,10 @@
 	import { onMount } from "svelte";
 	import { goto } from "$app/navigation";
 	import { Warning } from "postcss";
+	import "../../app.css";
 	// State variables
 	let fiatAmount = $state(""); // User-entered fiat amount
-	let selectedCurrency = $state("php"); // Default currency set to PHP
+	let selectedCurrency = $state("usd"); // Default currency set to PHP
 	let lnBtcAmount = $state(0); // Converted LN-BTC amount
 	let exchangeRates = $state({});
 	let currencyList = $state([]);
@@ -18,20 +19,88 @@
 	}
 	// Fetch all currency rates
 	async function fetchExchangeRates() {
+		let rate = null;
+		const priceProviders = [fetchRateFromCoingecko, fetchRateFromCoinCap]; // Assuming this array exists
+		currencyList = ["usd", "php"];
+
+		// Correctly get a random starting index
+		const randomIndex = 0//Math.floor(Math.random() * priceProviders.length);
+
+		// Loop through all providers, starting from the random index
+		for (let i = 0; i < priceProviders.length; i++) {
+			let providerIndex = (i + randomIndex) % priceProviders.length;
+			console.log(`Trying price provider #${providerIndex}...`);
+			
+			// Correctly CALL the function
+			rate = await priceProviders[providerIndex](); 
+
+			if (rate !== null) {
+				console.log(`Success with provider #${providerIndex}! rate=${rate.USD}`);
+				break; // Exit the loop on the first success
+			}
+		}
+
+		// Assign the successful result, or null if all failed
+		if (rate) {
+			exchangeRates = rate;
+		} else {
+			console.error("All price providers failed.");
+			// You might want to show an error to the user here
+		}
+	}
+
+	let priceProviders = [fetchRateFromCoingecko, fetchRateFromCoinCap];
+
+	async function fetchRateFromCoingecko() {
 		try {
-			const resCurrencies = await fetch(
-				"https://api.coingecko.com/api/v3/simple/supported_vs_currencies",
-			);
-			currencyList = await resCurrencies.json();
+			// const resCurrencies = await fetch(
+			// 	"https://api.coingecko.com/api/v3/simple/supported_vs_currencies",
+			// );
+			// currencyList = ["USD", "PHP"];
 
 			const resRates = await fetch(
 				`https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=${currencyList.join(",")}`,
 			);
 			const data = await resRates.json();
-			exchangeRates = data.bitcoin;
-			// updateLNBTCAmount();
+			return data.bitcoin;
 		} catch (error) {
 			console.error("Error fetching exchange rates:", error);
+			return null;
+		}
+	}
+
+	async function fetchRateFromCoinCap() {
+		try {
+			// CoinCap doesn't have a simple list of currencies, 
+			// so we get all fiat rates to build our currency list.
+			// const resCurrencies = await fetch("https://api.coincap.io/v2/rates");
+			// const currencyData = await resCurrencies.json();
+			// const currencyList = currencyData.data
+			// 	.filter((rate) => rate.type === 'fiat')
+			// 	.map((rate) => rate.symbol.toLowerCase());
+
+			// Now get the price of Bitcoin relative to all fiat currencies
+			const resRates = await fetch("https://api.coincap.io/v2/rates/bitcoin");
+			const data = await resRates.json();
+
+			// The CoinCap response needs to be transformed into the same format 
+			// as the CoinGecko response.
+			const priceInUSD = parseFloat(data.data.rateUsd);
+
+			const exchangeRates = currencyData.data
+				.filter((rate) => currencyList.includes(rate.symbol.toLowerCase()))
+				.reduce((acc, rate) => {
+					const rateInUSD = parseFloat(rate.rateUsd);
+					// Calculate the BTC price in the target currency
+					acc[rate.symbol.toLowerCase()] = priceInUSD / rateInUSD;
+					return acc;
+				}, {});
+				
+			return exchangeRates;
+
+		} catch (error) {
+			console.error("Error fetching CoinCap exchange rates:", error);
+			return null;
 		}
 	}
 
@@ -46,8 +115,6 @@
 	onMount(() => {
 		let current = localStorage.getItem("Currency");
 		if (current != null) {
-			// console.log(current);
-			console.warn("Josh");
 			selectedCurrency = current;
 		}
 		fetchExchangeRates();
@@ -71,72 +138,77 @@
 	}
 </script>
 
-<main class="relative flex h-dvh w-full flex-col gap-5 bg-neutral-200 px-5">
-	<section class="relative mt-5 flex h-[40%] flex-col gap-2">
-		<img
-			src="swap.png"
-			alt="Swap Icon"
-			class="absolute top-0 right-0 bottom-0 left-0 m-auto w-15"
-		/>
-		<!-- Fiat Currency Input -->
-		<div class="h-[100%] rounded-md bg-white p-2 shadow">
-			<select
-				bind:value={selectedCurrency}
-				class="text-md block w-full border-0 bg-gray-50 text-gray-500 ring-0"
-			>
-				{#each currencyList as currency}
-					<option value={currency}>{currency.toUpperCase()}</option>
-				{/each}
-			</select>
-			<div
-				class="flex h-[52px] w-full items-center rounded-sm border-0 p-3 text-xl ring-0"
-			>
-				{fiatAmount}
-			</div>
-		</div>
-		<!-- BTC Input -->
-		<div class="h-[100%] rounded-md bg-white p-2 shadow">
-			<div class="text-md flex h-10 items-center indent-2 text-gray-500">
-				BTC
-			</div>
-			<div
-				class="w-full rounded-sm border-0 p-3 text-xl text-gray-500 ring-0"
-			>
-				{lnBtcAmount.toFixed(10)}
-			</div>
-		</div>
-	</section>
-
-	<!-- Numeric Keypad -->
-	<section
-		class="h-[45%] grid grid-cols-3 grid-rows-4 gap-3 rounded-md bg-white p-5"
-	>
-		{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, ".", 0] as key}
-			<button class="button" onclick={() => handleKeypadInput(key)}>
-				<div
-					class="button-outer flex justify-center items-center w-full"
+<main class="relative flex w-full flex-col gap-5 bg-transparent">
+	<div
+			style="opacity:0.8; background-image:url(pattern.png);"
+			class="item-center absolute z-[-2] flex h-full w-full items-center justify-center bg-neutral-500"
+		></div>
+	<div
+			style="background-image: linear-gradient(to bottom, rgba(141, 141, 141, 0.45), rgba(0, 0, 0, 0.91));"
+			class="item-center absolute z-[-1] flex h-full w-full items-center justify-center"
+		></div>
+	<div class="main-content relative flex h-full w-full flex-col gap-5">
+		<section class="h-[45%] relative px-5 mt-5 flex flex-col gap-2">
+			<!-- Fiat Currency Input -->
+			<div class="h-[100%] rounded-md bg-white p-2 shadow">
+				<select
+					bind:value={selectedCurrency}
+					class="text-md block w-full border-0 bg-gray-50 text-gray-500 ring-0"
 				>
+					{#each currencyList as currency}
+						<option value={currency}>{currency.toUpperCase()}</option>
+					{/each}
+				</select>
+				<div
+					style="font-family:DSEG7"
+					class="flex pt-2 px-4 w-full items-center rounded-sm border-0 text-7xl ring-0"
+				>
+					{fiatAmount?fiatAmount:0}
+				</div>
+			</div>
+			<!-- BTC Input -->
+			<div class="h-[100%] rounded-md bg-white p-2 shadow">
+				<div class="text-md flex h-10 items-center indent-2 text-gray-500">
+					BTC (<span style="font-family: monospace">1 BTC = <span class="text-black font-bold">{exchangeRates[selectedCurrency]?.toLocaleString()}</span> {selectedCurrency.toUpperCase()}</span> )
+				</div>
+				<div
+					style="font-family:DSEG7"
+					class="w-full pt-2 px-4 rounded-sm border-0 text-7xl text-gray-500 ring-0"
+				>
+					{lnBtcAmount.toFixed(8)}
+				</div>
+			</div>
+		</section>
+
+		<!-- Numeric Keypad -->
+		<section
+			class="h-[50%] px-5 grid grid-cols-3 grid-rows-4 gap-3 rounded-md bg-neutral-700 p-5"
+		>
+			{#each [1, 2, 3, 4, 5, 6, 7, 8, 9, ".", 0] as key}
+				<button class="button" onclick={() => handleKeypadInput(key)}>
 					<div
-						class="button-inner w-full flex justify-center items-center text-3xl text-neutral-700"
+						class="button-outer flex justify-center items-center w-full"
 					>
-						{key}
+						<div
+							class="button-inner w-full flex justify-center items-center text-3xl text-neutral-700"
+						>
+							{key}
+						</div>
+					</div>
+				</button>
+			{/each}
+			<button class="button" onclick={() => (fiatAmount = "")}>
+				<div class="button-outer flex justify-center items-center w-full">
+					<div
+						class="button-inner w-full flex justify-center items-center text-3xl text-red-800"
+					>
+						C
 					</div>
 				</div>
 			</button>
-		{/each}
-		<button class="button" onclick={() => (fiatAmount = "")}>
-			<div class="button-outer flex justify-center items-center w-full">
-				<div
-					class="button-inner w-full flex justify-center items-center text-3xl text-red-800"
-				>
-					C
-				</div>
-			</div>
-		</button>
-	</section>
+		</section>
 
-	<!-- Payment & Conversion -->
-	<main class="flex h-[20%] flex-col items-center">
+		<div class="flex h-[5%] flex-col items-center px-5 align-bottom">
 		<!-- BTC Display -->
 		<!-- <p class="mt-2 text-lg">
 			💰 {fiatAmount}
@@ -144,14 +216,19 @@
 		</p> -->
 
 		<!-- Generate Invoice 
-		 onclick={createInvoice}-->
+		onclick={createInvoice}-->
 		<button
-			{onclick}
-			class="mb-15 w-full rounded bg-neutral-700 px-3 py-3 text-white hover:bg-neutral-600"
+			onclick={(lnBtcAmount == 0)? null : onclick}
+			disabled={lnBtcAmount == 0}
+			class="generate-button mb-15 w-full rounded bg-neutral-700 px-3 py-3 text-white hover:bg-neutral-600 font-bold text-xl"
 		>
 			Generate Lightning Invoice
 		</button>
-	</main>
+	</div>
+	</div>
+
+	<!-- Payment & Conversion -->
+	
 </main>
 
 <style>
@@ -200,7 +277,7 @@
 			0.15em 0.3em 0.1em -0.01em rgba(5, 5, 5, 0.25);
 	}
 
-	.button:hover .button-outer {
+	.button:active .button-outer {
 		box-shadow:
 			0 0 0 0 rgba(5, 5, 5, 1),
 			0 0 0 0 rgba(5, 5, 5, 0.5),
@@ -237,7 +314,7 @@
 			/* 7 */ -0.075em -0.25em 0.25em 0.1em inset rgba(5, 5, 5, 0.25);
 	}
 
-	.button:hover .button-inner {
+	.button:active .button-inner {
 		clip-path: inset(
 			clamp(1px, 0.0625em, 2px) clamp(1px, 0.0625em, 2px)
 				clamp(1px, 0.0625em, 2px) clamp(1px, 0.0625em, 2px) round 100em
@@ -253,35 +330,11 @@
 			/* 7 */ -0.075em -0.12em 0.2em 0.1em inset rgba(5, 5, 5, 0.25);
 	}
 
-	/* .button .button-inner span {
-		position: relative;
-		z-index: 4;
-		font-family: "Inter", sans-serif;
-		letter-spacing: -0.05em;
-		font-weight: 500;
-		color: rgba(0, 0, 0, 0);
-		background-image: linear-gradient(
-			135deg,
-			rgba(25, 25, 25, 1),
-			rgba(75, 75, 75, 1)
-		);
-		-webkit-background-clip: text;
-		background-clip: text;
-		transition: transform 250ms ease;
-		display: block;
-		will-change: transform;
-		text-shadow: rgba(0, 0, 0, 0.1) 0 0 0.1em;
-		-webkit-user-select: none;
-		-moz-user-select: none;
-		-ms-user-select: none;
-		user-select: none;
-	}
-
-	.button:hover .button-inner span {
-		transform: scale(0.975);
-	} */
-
 	.button:active .button-inner {
 		transform: scale(0.975);
+	}
+
+	button.generate-button:disabled {
+		opacity:0.2;
 	}
 </style>

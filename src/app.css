@@ -3,11 +3,35 @@
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 
+@font-face {
+  font-family: 'DSEG7';
+  src:
+    url('/7segment.woff') format('woff'),
+    url('/7segment.ttf') format('ttf');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .bg-x {
     /* background-image: url('bg-bg.png'); */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+}
+
+main {
+    height: 100dvh;
+}
+
+div.main-content {
+    --pt: env(safe-area-inset-top);
+    --pb: env(safe-area-inset-bottom);
+    --py: calc(var(--pt) + var(--pb));
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    height: calc(100dvh - var(--py));
 }
 
 @theme {

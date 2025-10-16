@@ -111,7 +111,7 @@
 			{:else}
 				<div style="display: block" class="px-3">
 					<h2 class="rounded bg-white p-2 text-center font-bold">
-						This terminal is not initialized
+						Activate Your Terminal
 					</h2>
 					<div>
 						{#if qrCodeDataUrl}

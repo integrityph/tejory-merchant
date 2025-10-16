@@ -2,7 +2,6 @@
 	import { goto } from "$app/navigation";
 	import "../app.css";
 	import Loader from "./loader.svelte";
-	import { BleClient } from '@capacitor-community/bluetooth-le';
 
 	var dateOptions = {
 		weekday: "short",
@@ -15,138 +14,20 @@
 	function onclick() {
 		goto("Exchange");
 	}
-
-
-	async function connectToPrinter() {
-    try {
-      statusMessage = 'Initializing Bluetooth...';
-      // 1. Initialize the Bluetooth client
-      await BleClient.initialize();
-
-      statusMessage = 'Please select a printer...';
-      // 2. Request a device. This opens the phone's native UI
-      // to scan for and select a Bluetooth device.
-      statusMessage = 'Please select a printer...';
-			const device = await BleClient.requestDevice({});
-
-			// --- ADD THIS LINE ---
-			console.log('Device selected:', device);
-
-			if (!device) {
-				statusMessage = 'No device selected.';
-				return; // Exit the function if the user cancelled
-			}
-
-			statusMessage = `Connecting to ${device.name}...`;
-			await BleClient.connect(device.deviceId);
-
-      connectedDevice = device;
-      statusMessage = `Connected to ${connectedDevice.name}!`;
-
-    } catch (error) {
-      // If anything goes wrong (e.g., user cancels, connection fails)
-      // the error will be caught here.
-      statusMessage = `Error: ${error.message}`;
-      console.error('Bluetooth Connection Error', error);
-			alert(error);
-    }
-  }
-
-  async function printTestReceipt() {
-    if (!connectedDevice) {
-      statusMessage = 'No printer connected.';
-      return;
-    }
-
-    try {
-      statusMessage = 'Sending data to printer...';
-
-      // --- This is where your ESC/POS expertise comes in ---
-      // You need to find the correct service and characteristic UUIDs for your printer.
-      // These are like addresses for the specific "print" functionality.
-      // You often find these in the printer's technical manual.
-      const PRINTER_SERVICE = '000018f0-0000-1000-8000-00805f9b34fb'; // Example UUID
-      const PRINTER_CHARACTERISTIC = '00002af1-0000-1000-8000-00805f9b34fb'; // Example UUID
-
-      // Create your ESC/POS commands.
-      const encoder = new TextEncoder();
-			const now = new Date();
-			const paymentReference = "test-1234";
-			const terminalName = localStorage.getItem("terminal_name");
-			let sats = "1000";
-			let amountCrypto =  parseInt(sats) / 100000000;
-			let currency_type = localStorage.getItem("Currency").toUpperCase();
-			let amountFiat = parseFloat("583.12");
-      const commands = [
-        '=============================\n',
-        '       Payment Receipt\n',
-				'=============================\n',
-        '\n\n',
-				'Payment Successful\n',
-				`Date: ${now.toLocaleDateString("en-US", dateOptions)}\n`,
-				`Time: ${now.toLocaleTimeString("en-US", timeOptions)}\n`,
-				`Reference: ${paymentReference}\n`,
-				`Terminal: ${terminalName}\n`,
-				`=============================\n`,
-				'\n\n',
-				`Currency: Bitcoin\n`,
-				`Network: Lightning\n`,
-				`Amount (BTC): ${amountCrypto.toFixed(8)}\n`,
-				`Amount (${currency_type}): ${amountFiat.toFixed(2)}\n`,
-				'\n\n',
-				'\n\n',
-        // ESC/POS command to cut the paper (example)
-        '\x1D\x56\x41\x00' 
-      ].join('');
-
-      const dataToSend = encoder.encode(commands);
-
-      // 4. Write the data to the printer.
-      await BleClient.write(
-        connectedDevice.deviceId,
-        PRINTER_SERVICE,
-        PRINTER_CHARACTERISTIC,
-        dataToSend
-      );
-
-			// const commands2 = [
-				
-			// ].join('');
-
-			// const dataToSend2 = encoder.encode(commands2);
-
-			// // 4. Write the data to the printer.
-      // await BleClient.write(
-      //   connectedDevice.deviceId,
-      //   PRINTER_SERVICE,
-      //   PRINTER_CHARACTERISTIC,
-      //   dataToSend2
-      // );
-      
-      statusMessage = 'Print command sent successfully!';
-
-    } catch (error) {
-      statusMessage = `Error: ${error.message}`;
-      console.error('Bluetooth Write Error', error);
-			alert(error);
-    }
-
-		BleClient.disconnect(connectedDevice.deviceId);
-  }
-
-	let connectedDevice = null;
-  let statusMessage = 'Ready to connect to a printer.';
-	async function printReceipt(){
-		await connectToPrinter();
-		await printTestReceipt();
-		// disconnect();
-	}
 </script>
 
-<main class="relative h-dvh w-full bg-neutral-400">
+<main class="relative h-dvh w-full bg-transparent">
 	<Loader />
 	<div
-		class="absoulte bg-x flex h-dvh w-full flex-col items-end justify-end p-5 md:h-dvh"
+			style="opacity:0.8; background-image:url(pattern.png);"
+			class="item-center absolute z-[-2] flex h-dvh w-full items-center justify-center bg-neutral-500"
+		></div>
+	<div
+			style="background-image: linear-gradient(to bottom, rgba(141, 141, 141, 0.45), rgba(0, 0, 0, 0.91));"
+			class="item-center absolute z-[-1] flex h-dvh w-full items-center justify-center"
+		></div>
+	<div
+		class="main-content absoulte bg-x flex w-full flex-col items-end justify-end p-5 md:h-dvh"
 	>
 		<button
 			{onclick}
@@ -221,10 +102,5 @@
 			>
 			<p class="w-36">Ethereum</p>
 		</button>
-		<!-- <button
-			onclick={printReceipt}
-			type="button"
-			class="mb-5 flex w-full items-center justify-center gap-5 rounded bg-neutral-700 px-4 py-3 text-white hover:bg-neutral-600"
-			>printReceipt</button> -->
 	</div>
 </main>
