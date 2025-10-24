@@ -3,7 +3,6 @@
 <plist version="1.0">
 <dict>
 	<key>ITSAppUsesNonExemptEncryption</key><false/>
-	<string></string>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>To print receipts wirelessly, this app needs to use Bluetooth to find your printer.</string>
 	<key>UIBackgroundModes</key>
