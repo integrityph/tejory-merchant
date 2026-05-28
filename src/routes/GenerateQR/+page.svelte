@@ -4,7 +4,11 @@
 	import Modal from "./Modal.svelte";
 	import { onMount } from "svelte";
 	import { BleClient } from '@capacitor-community/bluetooth-le';
+	// QR code Generation
+	import QRCode from "qrcode-generator";
+	import { error } from "@sveltejs/kit";
 
+	
 
 	let progress = $state(100);
 	let duration = 5 * 60000;
@@ -18,10 +22,16 @@
 	let qrStatus = $state(""); // "success" or "error"
 	let qrMessage = $state("");
 	let amountFiat = $state(0.0);
+	let fiatAmountBaseUSDB = $state(0);
 	let paymentReference = $state("");
 	let fiatSymbol = $state("USD");
 	let status = $state();
 	let errorMessage = $state("Unknow error");
+	let sats = $state("");
+	let qrCodeDataUrl = $state();
+	let invoice = $state();
+	let invoiceId = null;
+
 	var dateOptions = {
 		weekday: "short",
 		year: "numeric",
@@ -70,55 +80,26 @@
 			fiatSymbol = current;
 		}
 		let amounts = location.hash.replaceAll("#", "").split(",");
-		sats = parseInt(amounts[0]);
-		amountFiat = parseFloat(amounts[1]);
-		generateQrCode(sats);
+		amountFiat = parseFloat(amounts[0]);
+		fiatAmountBaseUSDB = parseInt(amounts[1]);
+		generateQrCode(fiatAmountBaseUSDB);
 	});
 
-	// QR code Generation
-	import QRCode from "qrcode-generator";
-	import { error } from "@sveltejs/kit";
-
-	let sats = $state("");
-	let qrCodeDataUrl = $state();
-	let invoice = $state();
-	let txhash = null;
-
-	function generateQrCode(sats) {
+	function generateQrCode(fiatAmountBaseUSDB) {
 		let reqObj = {
-			amount: sats.toString(),
-			expiry: 60 * 5,
+			invoiceRequest: {
+				amountUSDCents: Math.round(fiatAmountBaseUSDB/10_000),
+				publicKey: localStorage.getItem("public_key"),
+			}
 		};
 
-		// Uncomment this block for testing without real invoices
-		// status = true;
-		// invoice = "alskjfhlaksjdfhaklsjdfhalksjdfhaksldjfhalksdjfhaksldfhj";
-		// const qr = QRCode(0, "L");
-		// qr.addData(invoice);
-		// qr.make();
-		// qrCodeDataUrl = qr.createDataURL(12, 0); // Scale 8, margin 0
-		// // Start QR expiration countdown
-		// const interval = setInterval(() => {
-		// 	if (progress > 0) {
-		// 		progress = Math.max(progress - decrement, 0);
-		// 	} else {
-		// 		clearInterval(interval);
-		// 		// console.log('QR Expired');
-		// 		isQRExpired = true;
-		// 	}
-		// }, intervalTime);
-
-		// return () => {
-		// 	clearInterval(interval);
-		// };
-
-		fetch("https://ln.tejory.io/makeinvoice", {
+		fetch("https://faas-sgp1-18bc02ac.doserverless.co/api/v1/web/fn-a6380fe5-7756-40c6-81ae-70c49e8d07f9/tejoryinvoices/invoicerequest", {
 			method: "POST",
 			mode: "cors",
 			headers: {
-				pubkey: localStorage.getItem("pubkey"),
-				token: localStorage.getItem("token"),
-				"Access-Control-Allow-Headers": "*",
+				"Content-Type": "application/json",
+				// token: localStorage.getItem("token"),
+				// "Access-Control-Allow-Headers": "*",
 			},
 			body: JSON.stringify(reqObj),
 		}).then(async (response) => {
@@ -135,13 +116,15 @@
 			}
 			const qr = QRCode(0, "L"); // Type number 0 (auto) and error correction level 'L'
 			invoice = obj["invoice"];
-			txhash = obj["tx_hash"];
+			invoiceId = obj["invoiceId"];
+			const tempTxId = obj["txId"];
+			sats = obj["amountSats"];
 			// console.log(invoice, obj);
 			qr.addData(invoice);
 			qr.make();
 			qrCodeDataUrl = qr.createDataURL(12, 0); // Scale 8, margin 0
 
-			streamEvents(txhash);
+			streamEvents(invoiceId, tempTxId);
 
 			// Start QR expiration countdown
 			const interval = setInterval(() => {
@@ -160,36 +143,113 @@
 		});
 	}
 
-	function streamEvents(txhash) {
-		if (window["WebSocket"]) {
-			let pubkey = localStorage.getItem("pubkey");
-			let token = localStorage.getItem("token");
-			let conn = new WebSocket(
-				`wss://ln.tejory.io/streamevents?auth=${pubkey},${token}`,
-			);
-			conn.onclose = function (evt) {
-				// if websocket fails, try to get the tx status from another API
-			};
-			conn.onmessage = function (evt) {
-				var messages = evt.data.split("\n");
-				for (var i = 0; i < messages.length; i++) {
-					let obj = JSON.parse(messages[i]);
-					if (obj["txid"] != undefined) {
-						if (obj["txid"] == txhash) {
-							if (obj["settled"] == true) {
-								paymentReference = txhash.substring(0, 10);
-								qrStatus = "success";
-								qrMessage = "Your payment has been received!";
-								isModalOpen = true;
-							}
-						}
-					}
+	async function streamEvents(invoiceId, tempTxId) {
+		let publicKey = localStorage.getItem("public_key");
+		let terminalName = localStorage.getItem("terminal_name");
+
+		const reqObj = {
+			invoiceStatus: {
+				publicKey: publicKey,
+				invoiceId: invoiceId,
+				txId: tempTxId, 
+				terminalId: terminalName,
+			}
+		};
+
+		let status = "pending";
+
+		// Safely block the loop using 'await'
+		while (!isQRExpired && status === "pending") {
+			try {
+				const response = await fetch("https://faas-sgp1-18bc02ac.doserverless.co/api/v1/web/fn-a6380fe5-7756-40c6-81ae-70c49e8d07f9/tejoryinvoices/invoicerequest", {
+					method: "POST",
+					mode: "cors",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify(reqObj),
+				});
+
+				const resObjRaw = await response.text();
+				const obj = JSON.parse(resObjRaw);
+
+				if (obj.status === "error" && response.status === 402) {
+					// 402 Payment Required: Still pending.
+					// Wait 2 seconds before firing the next poll to spare DO resources.
+					await new Promise(resolve => setTimeout(resolve, 2000));
+					
+				} else if (obj.status === "error") {
+					// Terminal Error (e.g., HTLC claimed, swap failed)
+					qrStatus = "failed";
+					qrMessage = obj.err_msg || "Payment failed";
+					status = "failed";
+					isModalOpen = true;
+					
+				} else {
+					// Success! 200 OK
+					const txId = obj.txId; 
+					paymentReference = txId ? txId.substring(txId.length - 10) : "N/A";
+					qrStatus = "success";
+					qrMessage = "Your payment has been received!";
+					status = "success";
+					isModalOpen = true;
 				}
-			};
-		} else {
-			// if websocket is not supported, try to get the tx status from another API
+				
+			} catch (error) {
+				console.error("Polling error:", error);
+				// Don't kill the loop on a temporary network hiccup, just wait and retry
+				await new Promise(resolve => setTimeout(resolve, 3000));
+			}
 		}
 	}
+
+	// async function streamEvents(invoiceId, tempTxId) {
+	// 	let sparkAddress = localStorage.getItem("spark_address");
+
+	// 	const reqObj = {
+	// 		invoiceStatus: {
+	// 			sparkInvoice: sparkAddress,
+	// 			invoiceId: invoiceId,
+	// 			txId: tempTxId,
+	// 		}
+	// 	}
+
+	// 	let status = "pending";
+	// 	while (!isQRExpired && status == "pending") {
+	// 		fetch("https://faas-sgp1-18bc02ac.doserverless.co/api/v1/web/fn-a6380fe5-7756-40c6-81ae-70c49e8d07f9/tejoryinvoices/invoicerequest", {
+	// 			method: "POST",
+	// 			mode: "cors",
+	// 			headers: {
+	// 				"Content-Type": "application/json",
+	// 				// token: localStorage.getItem("token"),
+	// 				// "Access-Control-Allow-Headers": "*",
+	// 			},
+	// 			body: JSON.stringify(reqObj),
+	// 		}).then(async (response) => {
+	// 			let resObjRaw = await response.text();
+	// 			console.log(resObjRaw);
+
+	// 			let obj = JSON.parse(resObjRaw);
+	// 			// console.log(obj["status"]);
+	// 			if (obj["status"] == "error" && response.status == 402) {
+	// 				// pending payment
+	// 				await new Promise(resolve => setTimeout(resolve, 1000));
+	// 			} else if (obj["status"] == "error") {
+	// 				const txId = obj["txId"];
+	// 				paymentReference = txId.substring(txId.length-10);
+	// 				qrStatus = "failed";
+	// 				qrMessage = "Payment failed";
+	// 				status = "failed";
+	// 			} else {
+	// 				const txId = obj["txId"];
+	// 				paymentReference = txId.substring(txId.length-10);
+	// 				qrStatus = "success";
+	// 				qrMessage = "Your payment has been received!";
+	// 				status = "success";
+	// 			}
+				
+	// 			isModalOpen = true;
+	// 		});
+	// 	}
+	// }
 </script>
 
 {#if status != false}

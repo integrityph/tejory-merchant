@@ -14,22 +14,21 @@
     
 		let tokenParts = remoteToken.split(":");
 
-		if (tokenParts.length != 3){
-			console.log("tokenParts.length is not 3", tokenParts.length);
+		if (tokenParts.length != 2){
+			console.log("tokenParts.length is not 2", tokenParts.length);
 			return;
 		}
 
-    localStorage.setItem("pubkey", tokenParts[0]);
-		localStorage.setItem("terminal_name", tokenParts[2]);
-		localStorage.setItem("token", tokenParts[1]);
+    	localStorage.setItem("public_key", tokenParts[0]);
+		localStorage.setItem("terminal_name", tokenParts[1]);
 		initialized = true;
 		setTimeout(() => {
 			loading = false;
 		}, 1000);
     
-    // Clear input after submission
-    remoteToken = '';
-  }
+		// Clear input after submission
+		remoteToken = '';
+  	}
 
 	function buf2hex(buffer) {
 		// buffer is an ArrayBuffer
@@ -40,43 +39,43 @@
 
 	// Simulate a loading delay (remove this in actual use)
 	onMount(() => {
-		let pubkey = localStorage.getItem("pubkey");
-		let token = localStorage.getItem("token");
-		if (pubkey == null || token == null) {
-			const qr = QRCode(0, "L"); // Type number 0 (auto) and error correction level 'L'
-			tempToken = new Uint8Array(32);
-			window.crypto.getRandomValues(tempToken);
-			qr.addData("ff" + buf2hex(tempToken.buffer));
-			console.log("ff" + buf2hex(tempToken.buffer));
-			qr.make();
-			qrCodeDataUrl = qr.createDataURL(12, 0); // Scale 8, margin 0
+		let pubkey = localStorage.getItem("public_key");
+		let terminal_name = localStorage.getItem("terminal_name");
+		if (pubkey == null || terminal_name == null) {
+			// const qr = QRCode(0, "L"); // Type number 0 (auto) and error correction level 'L'
+			// tempToken = new Uint8Array(32);
+			// window.crypto.getRandomValues(tempToken);
+			// qr.addData("ff" + buf2hex(tempToken.buffer));
+			// console.log("ff" + buf2hex(tempToken.buffer));
+			// qr.make();
+			// qrCodeDataUrl = qr.createDataURL(12, 0); // Scale 8, margin 0
 
-			let conn = new WebSocket(
-				`wss://ln.tejory.io/streamevents?auth=ff${buf2hex(tempToken.buffer)}`,
-			);
-			conn.onclose = function (evt) {
-				// if websocket fails, try to get the tx status from another API
-			};
-			conn.onmessage = function (evt) {
-				var messages = evt.data.split("\n");
-				for (var i = 0; i < messages.length; i++) {
-					let obj = JSON.parse(messages[i]);
-					if (
-						obj["pubkey"] != undefined &&
-						obj["terminal_name"] != undefined &&
-						obj["token"] != undefined
-					) {
-						localStorage.setItem("pubkey", obj["pubkey"]);
-						localStorage.setItem("terminal_name", obj["terminal_name"]);
-						localStorage.setItem("token", obj["token"]);
-						conn.close();
-						initialized = true;
-						setTimeout(() => {
-							loading = false;
-						}, 1000);
-					}
-				}
-			};
+			// let conn = new WebSocket(
+			// 	`wss://ln.tejory.io/streamevents?auth=ff${buf2hex(tempToken.buffer)}`,
+			// );
+			// conn.onclose = function (evt) {
+			// 	// if websocket fails, try to get the tx status from another API
+			// };
+			// conn.onmessage = function (evt) {
+			// 	var messages = evt.data.split("\n");
+			// 	for (var i = 0; i < messages.length; i++) {
+			// 		let obj = JSON.parse(messages[i]);
+			// 		if (
+			// 			obj["pubkey"] != undefined &&
+			// 			obj["terminal_name"] != undefined &&
+			// 			obj["token"] != undefined
+			// 		) {
+			// 			localStorage.setItem("pubkey", obj["pubkey"]);
+			// 			localStorage.setItem("terminal_name", obj["terminal_name"]);
+			// 			localStorage.setItem("token", obj["token"]);
+			// 			conn.close();
+			// 			initialized = true;
+			// 			setTimeout(() => {
+			// 				loading = false;
+			// 			}, 1000);
+			// 		}
+			// 	}
+			// };
 		} else {
 			initialized = true;
 			setTimeout(() => {

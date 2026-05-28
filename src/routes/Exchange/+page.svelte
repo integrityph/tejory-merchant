@@ -5,6 +5,7 @@
 	import "../../app.css";
 	// State variables
 	let fiatAmount = $state(""); // User-entered fiat amount
+	let fiatAmountBaseUSDB = $state(""); // User-entered fiat amount
 	let selectedCurrency = $state("usd"); // Default currency set to PHP
 	let lnBtcAmount = $state(0); // Converted LN-BTC amount
 	let exchangeRates = $state({});
@@ -15,16 +16,17 @@
 	function onclick() {
 		localStorage.setItem("Currency", selectedCurrency);
 		let sats = parseInt(lnBtcAmount * 100000000);
-		goto("GenerateQR#" + sats + "," + fiatAmount);
+		goto("GenerateQR#" + fiatAmount + "," + fiatAmountBaseUSDB);
 	}
+
+	const priceProviders = [fetchRateFromCoingecko];
 	// Fetch all currency rates
 	async function fetchExchangeRates() {
 		let rate = null;
-		const priceProviders = [fetchRateFromCoingecko, fetchRateFromCoinCap]; // Assuming this array exists
 		currencyList = ["usd", "php"];
 
 		// Correctly get a random starting index
-		const randomIndex = 0//Math.floor(Math.random() * priceProviders.length);
+		const randomIndex = 0; //Math.floor(Math.random() * priceProviders.length);
 
 		// Loop through all providers, starting from the random index
 		for (let i = 0; i < priceProviders.length; i++) {
@@ -49,8 +51,6 @@
 		}
 	}
 
-	let priceProviders = [fetchRateFromCoingecko, fetchRateFromCoinCap];
-
 	async function fetchRateFromCoingecko() {
 		try {
 			// const resCurrencies = await fetch(
@@ -69,45 +69,12 @@
 		}
 	}
 
-	async function fetchRateFromCoinCap() {
-		try {
-			// CoinCap doesn't have a simple list of currencies, 
-			// so we get all fiat rates to build our currency list.
-			// const resCurrencies = await fetch("https://api.coincap.io/v2/rates");
-			// const currencyData = await resCurrencies.json();
-			// const currencyList = currencyData.data
-			// 	.filter((rate) => rate.type === 'fiat')
-			// 	.map((rate) => rate.symbol.toLowerCase());
-
-			// Now get the price of Bitcoin relative to all fiat currencies
-			const resRates = await fetch("https://api.coincap.io/v2/rates/bitcoin");
-			const data = await resRates.json();
-
-			// The CoinCap response needs to be transformed into the same format 
-			// as the CoinGecko response.
-			const priceInUSD = parseFloat(data.data.rateUsd);
-
-			const exchangeRates = currencyData.data
-				.filter((rate) => currencyList.includes(rate.symbol.toLowerCase()))
-				.reduce((acc, rate) => {
-					const rateInUSD = parseFloat(rate.rateUsd);
-					// Calculate the BTC price in the target currency
-					acc[rate.symbol.toLowerCase()] = priceInUSD / rateInUSD;
-					return acc;
-				}, {});
-				
-			return exchangeRates;
-
-		} catch (error) {
-			console.error("Error fetching CoinCap exchange rates:", error);
-			return null;
-		}
-	}
-
 	// Convert fiat to LN-BTC when fiatAmount or currency changes
 	$effect(() => {
 		if (exchangeRates[selectedCurrency]) {
 			lnBtcAmount = fiatAmount / exchangeRates[selectedCurrency];
+			// get the fiat amount in USD
+			fiatAmountBaseUSDB = ((fiatAmount / (exchangeRates[selectedCurrency] / exchangeRates["usd"])).toFixed(6) * 1_000_000).toString();
 		}
 	});
 
@@ -169,7 +136,7 @@
 			<!-- BTC Input -->
 			<div class="h-[100%] rounded-md bg-white p-2 shadow">
 				<div class="text-md flex h-10 items-center indent-2 text-gray-500">
-					BTC (<span style="font-family: monospace">1 BTC = <span class="text-black font-bold">{exchangeRates[selectedCurrency]?.toLocaleString()}</span> {selectedCurrency.toUpperCase()}</span> )
+					Estimated BTC (<span style="font-family: monospace">1 BTC = <span class="text-black font-bold">{exchangeRates[selectedCurrency]?.toLocaleString()}</span> {selectedCurrency.toUpperCase()}</span> )
 				</div>
 				<div
 					style="font-family:DSEG7"

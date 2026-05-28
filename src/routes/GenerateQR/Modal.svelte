@@ -90,7 +90,7 @@
         '       Payment Receipt\n',
 				'=============================\n',
         '\n\n',
-				'Payment Successful\n',
+				`Payment ${status ? "Successful" : "Failed"}\n`,
 				`Date: ${now.toLocaleDateString("en-US", dateOptions)}\n`,
 				`Time: ${now.toLocaleTimeString("en-US", timeOptions)}\n`,
 				`Reference: ${paymentReference}\n`,
@@ -164,7 +164,9 @@
 					&nbsp;&nbsp;&nbsp;Tejory Payment Receipt <br />
 					=============================<br />
 					<br />
-					Payment Successful<br />
+					{status === "success"
+					? "Payment Successful!"
+					: "Payment Failed"}<br />
 					Date: {now.toLocaleDateString("en-US", dateOptions)}<br />
 					Time: {now.toLocaleTimeString("en-US", timeOptions)}<br />
 					Reference: {paymentReference}<br />
