@@ -2,12 +2,15 @@
 	import "../../app.css";
 	import { goto } from "$app/navigation";
 	import Modal from "./Modal.svelte";
-	import { onMount } from "svelte";
+	import { onMount, onDestroy } from "svelte";
 	import { BleClient } from '@capacitor-community/bluetooth-le';
 	// QR code Generation
 	import QRCode from "qrcode-generator";
 	import { error } from "@sveltejs/kit";
 
+	// Add these new variables to track your background processes
+	let qrInterval; 
+	let isComponentMounted = true;
 	
 
 	let progress = $state(100);
@@ -47,7 +50,10 @@
 	function regenerateQR() {
 		isQRExpired = false;
 		progress = 100;
-		generateQrCode(sats);
+		qrStatus = "";
+		qrMessage = "";
+		status = undefined; // Reset status so the error screen goes away
+		generateQrCode(fiatAmountBaseUSDB);
 	}
 
 	// Simulate QR Scan Detection & Payment Check
@@ -83,6 +89,11 @@
 		amountFiat = parseFloat(amounts[0]);
 		fiatAmountBaseUSDB = parseInt(amounts[1]);
 		generateQrCode(fiatAmountBaseUSDB);
+	});
+
+	onDestroy(() => {
+		isComponentMounted = false; // Kills the streamEvents while-loop
+		if (qrInterval) clearInterval(qrInterval); // Kills the countdown
 	});
 
 	function generateQrCode(fiatAmountBaseUSDB) {
@@ -127,12 +138,15 @@
 			streamEvents(invoiceId, tempTxId);
 
 			// Start QR expiration countdown
-			const interval = setInterval(() => {
+			// Clear any existing interval before starting a new one
+			if (qrInterval) clearInterval(qrInterval);
+
+			// Start QR expiration countdown
+			qrInterval = setInterval(() => {
 				if (progress > 0) {
 					progress = Math.max(progress - decrement, 0);
 				} else {
-					clearInterval(interval);
-					// console.log('QR Expired');
+					clearInterval(qrInterval);
 					isQRExpired = true;
 				}
 			}, intervalTime);
@@ -159,7 +173,7 @@
 		let status = "pending";
 
 		// Safely block the loop using 'await'
-		while (!isQRExpired && status === "pending") {
+		while (!isQRExpired && status === "pending" && isComponentMounted) {
 			try {
 				const response = await fetch("https://faas-sgp1-18bc02ac.doserverless.co/api/v1/web/fn-a6380fe5-7756-40c6-81ae-70c49e8d07f9/tejoryinvoices/invoicerequest", {
 					method: "POST",

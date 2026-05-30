@@ -1,0 +1,6 @@
+{
+	"appId": "io.tejory.pos",
+	"appName": "Tejory POS",
+	"webDir": "build",
+	"android": {}
+}
